@@ -26,7 +26,8 @@ data class InstrumentView(
     val isin: String,
     val description: String,
     val price: Double? = null,
-    val createdAt: String
+    val createdAt: String,
+    val updatedAt: String?
 )
 
 data class Instrument(
@@ -34,7 +35,17 @@ data class Instrument(
     val description: String,
     val price: Double? = null,
     val createdAt: OffsetDateTime = OffsetDateTime.now(),
-    val isDeleted: Boolean = false
+    val updatedAt: OffsetDateTime? = null,
+    val isActive: Boolean = true
+)
+
+data class Candlestick(
+    val openTime: OffsetDateTime,
+    val closingTime: OffsetDateTime,
+    val openPrice: Double,
+    val closingPrice: Double,
+    val highPrice: Double,
+    val lowPrice: Double
 )
 
 enum class EventType {

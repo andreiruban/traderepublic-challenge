@@ -22,11 +22,11 @@ import io.ktor.routing.get
 import io.ktor.routing.routing
 import io.ktor.webjars.Webjars
 import io.ktor.websocket.webSocket
-import io.ruban.entity.Instrument
 import io.ruban.entity.InstrumentEvent
 import io.ruban.entity.QuoteEvent
-import io.ruban.service.InstrumentService
-import io.ruban.util.view
+import io.ruban.repository.Repository
+import io.ruban.service.DataAggregator
+import io.ruban.service.EventProcessor
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.filterNotNull
 import kotlinx.coroutines.channels.map
@@ -45,7 +45,11 @@ fun Application.module(testing: Boolean = false) {
     val kodein = Kodein {
         bind<HttpClient>(tag = "socketClient") with singleton { HttpClient(CIO).config { install(WebSockets) } }
         bind<Gson>(tag = "gson") with singleton { Gson() }
-        bind<InstrumentService>(tag = "service") with singleton { InstrumentService() }
+
+        bind<Repository>(tag = "repository") with singleton { Repository() }
+
+        bind<EventProcessor>(tag = "processor") with singleton { EventProcessor(instance(tag = "repository")) }
+        bind<DataAggregator>(tag = "aggregator") with singleton { DataAggregator(instance(tag = "repository")) }
     }
 
     install(ContentNegotiation) {
@@ -66,7 +70,8 @@ fun Application.module(testing: Boolean = false) {
 
     val socketClient by kodein.instance<HttpClient>(tag = "socketClient")
     val gson by kodein.instance<Gson>(tag = "gson")
-    val service by kodein.instance<InstrumentService>("service")
+    val processor by kodein.instance<EventProcessor>("processor")
+    val aggregator by kodein.instance<DataAggregator>("aggregator")
 
     async {
         socketClient.ws(method = HttpMethod.Get, host = "127.0.0.1", port = 8080, path = "/instruments") {
@@ -75,9 +80,7 @@ fun Application.module(testing: Boolean = false) {
                     log.debug("Instruments channel received:\n${message.readText()}")
                 }
                 val event = gson.fromJson(message.readText(), InstrumentEvent::class.java)
-                service.save(
-                    Instrument(isin = event.data.isin, description = event.data.description)
-                )
+                processor.consume(event)
             }
         }
     }
@@ -89,7 +92,7 @@ fun Application.module(testing: Boolean = false) {
                     log.debug(("Quotes channel received:\n${message.readText()}"))
                 }
                 val event = gson.fromJson(message.readText(), QuoteEvent::class.java)
-                // TODO: persist them
+                processor.consume(event)
             }
         }
     }
@@ -97,8 +100,7 @@ fun Application.module(testing: Boolean = false) {
 
     routing {
         get(path = "/instruments") {
-            val instruments = service.getAll().map { it.view() }
-            call.respond(status = HttpStatusCode.OK, message = instruments)
+            call.respond(status = HttpStatusCode.OK, message = aggregator.list())
         }
 
         webSocket("/channel") {
