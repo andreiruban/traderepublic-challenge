@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "io.ruban"
-version = "0.0.1"
+version = "0.1"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -35,7 +35,6 @@ repositories {
 dependencies {
     // Jetbrains
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.20.0")
 
     // Ktor
     implementation("io.ktor:ktor-server-netty:$ktor_version")
@@ -51,18 +50,20 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:$ktor_version")
     implementation("io.ktor:ktor-client-websockets:$ktor_version")
     implementation("io.ktor:ktor-client-logging-jvm:$ktor_version")
-
     implementation("io.ktor:ktor-webjars:$ktor_version")
+    testImplementation("io.ktor:ktor-server-tests:$ktor_version")
 
     implementation("ch.qos.logback:logback-classic:$logback_version")
 
     implementation("org.webjars:jquery:3.2.1")
 
-    testImplementation("io.ktor:ktor-server-tests:$ktor_version")
-
     // DI
     implementation("org.kodein.di:kodein-di-generic-jvm:$kodein_version")
     implementation("org.kodein.di:kodein-di-framework-ktor-server-jvm:$kodein_version")
+
+//    implementation("org.jetbrains.exposed:exposed:0.12.1")
+//    implementation("com.zaxxer:HikariCP:2.7.8")
+//    implementation("org.postgresql:postgresql:42.2.2")
 }
 
 kotlin.sourceSets["main"].kotlin.srcDirs("src")
