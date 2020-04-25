@@ -14,9 +14,9 @@ class DataAggregator(
 ) {
     fun list() = repository.activeInstruments().map(Instrument::view)
 
-    fun candlesFor(isin: String, period: Long): List<CandlestickView> {
+    fun candlesFor(isin: String, period: Long): List<Candlestick> {
         validateISIN(isin)
         validatePeriod(period)
-        return toCandles(repository.lastQuotes(isin = isin, minutes = period)).map(Candlestick::view)
+        return toCandles(repository.lastQuotes(isin = isin, minutes = period))
     }
 }
