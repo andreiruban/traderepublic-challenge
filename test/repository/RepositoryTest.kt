@@ -1,4 +1,4 @@
-package io.ruban
+package io.ruban.repository
 
 import io.ruban.entity.Instrument
 import io.ruban.repository.Repository
