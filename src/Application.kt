@@ -20,6 +20,7 @@ import io.ktor.http.cio.websocket.timeout
 import io.ktor.response.respond
 import io.ktor.routing.get
 import io.ktor.routing.routing
+import io.ktor.util.KtorExperimentalAPI
 import io.ktor.webjars.Webjars
 import io.ktor.websocket.webSocket
 import io.ruban.entity.InstrumentEvent
@@ -27,9 +28,12 @@ import io.ruban.entity.QuoteEvent
 import io.ruban.repository.Repository
 import io.ruban.service.DataAggregator
 import io.ruban.service.EventProcessor
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
-import kotlinx.coroutines.channels.filterNotNull
-import kotlinx.coroutines.channels.map
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import org.kodein.di.Kodein
 import org.kodein.di.generic.bind
 import org.kodein.di.generic.instance
@@ -39,8 +43,10 @@ import java.time.Duration
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
+@KtorExperimentalAPI
+@ExperimentalCoroutinesApi
 @kotlin.jvm.JvmOverloads
-fun Application.module(testing: Boolean = false) {
+fun Application.module(testing: Boolean = true) {
 
     val kodein = Kodein {
         bind<HttpClient>(tag = "socketClient") with singleton { HttpClient(CIO).config { install(WebSockets) } }
@@ -75,7 +81,7 @@ fun Application.module(testing: Boolean = false) {
 
     async {
         socketClient.ws(method = HttpMethod.Get, host = "127.0.0.1", port = 8080, path = "/instruments") {
-            for (message in incoming.map { it as? Frame.Text }.filterNotNull()) {
+            incoming.consumeAsFlow().map { it as? Frame.Text }.filterNotNull().collect { message ->
                 if (testing) {
                     log.debug("Instruments channel received:\n${message.readText()}")
                 }
@@ -87,7 +93,7 @@ fun Application.module(testing: Boolean = false) {
 
     async {
         socketClient.ws(method = HttpMethod.Get, host = "127.0.0.1", port = 8080, path = "/quotes") {
-            for (message in incoming.map { it as? Frame.Text }.filterNotNull()) {
+            incoming.consumeAsFlow().map { it as? Frame.Text }.filterNotNull().collect { message ->
                 if (testing) {
                     log.debug(("Quotes channel received:\n${message.readText()}"))
                 }
@@ -96,7 +102,6 @@ fun Application.module(testing: Boolean = false) {
             }
         }
     }
-
 
     routing {
         get(path = "/instruments") {
