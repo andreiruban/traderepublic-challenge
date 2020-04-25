@@ -16,7 +16,6 @@ class Repository(
 
     private val log = LoggerFactory.getLogger(Repository::class.java)
 
-
     fun activeInstruments(): List<Instrument> {
         return instruments.values.filter { it.isActive }
     }

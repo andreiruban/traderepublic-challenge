@@ -112,7 +112,7 @@ fun Application.module(testing: Boolean = true) {
             val isin: String = call.parameters["isin"] ?: throw RuntimeException("ISIN not specified")
             val lastPeriod: Long = call.parameters["last_period"]?.toLong() ?: 30
 
-            call.respond(status = HttpStatusCode.OK, message = aggregator.candles(isin = isin, period = lastPeriod))
+            call.respond(status = HttpStatusCode.OK, message = aggregator.candlesFor(isin = isin, period = lastPeriod))
         }
 
         webSocket("/hotInstruments") {
