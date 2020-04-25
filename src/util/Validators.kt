@@ -8,3 +8,7 @@ fun validateISIN(isin: String) {
 fun validatePrice(price: Double) {
     if (price < 0) throw RuntimeException("Price $price is invalid")
 }
+
+fun validatePeriod(period: Long) {
+    if (period < 1) throw RuntimeException("Period $period is invalid")
+}

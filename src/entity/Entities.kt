@@ -49,6 +49,10 @@ data class Instrument(
     val isActive: Boolean = true
 )
 
+enum class EventType {
+    ADD, DELETE, QUOTE
+}
+
 data class Candlestick(
     val openTime: OffsetDateTime,
     val closingTime: OffsetDateTime,
@@ -58,6 +62,11 @@ data class Candlestick(
     val lowPrice: Double
 )
 
-enum class EventType {
-    ADD, DELETE, QUOTE
-}
+data class CandlestickView(
+    val openTime: String,
+    val closingTime: String,
+    val openPrice: Double,
+    val closingPrice: Double,
+    val highPrice: Double,
+    val lowPrice: Double
+)

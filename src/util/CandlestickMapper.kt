@@ -4,8 +4,8 @@ import io.ruban.entity.Candlestick
 import java.time.OffsetDateTime
 import java.util.*
 
-fun toCandles(quotes: SortedMap<OffsetDateTime, Double>): SortedMap<Int, Candlestick> {
-    val candles: SortedMap<Int, Candlestick> = sortedMapOf()
+fun toCandles(quotes: SortedMap<OffsetDateTime, Double>): List<Candlestick> {
+    val candles: List<Candlestick> = listOf()
 
     val chunks = quotes.keys.groupBy { time -> time.minute }.toSortedMap()
     try {
@@ -16,8 +16,7 @@ fun toCandles(quotes: SortedMap<OffsetDateTime, Double>): SortedMap<Int, Candles
             val highPrice = quotes.filterKeys { time -> time in timeChunk }.values.max()!!
             val lowPrice = quotes.filterKeys { time -> time in timeChunk }.values.min()!!
 
-            candles.putIfAbsent(
-                minute,
+            candles.plusElement(
                 Candlestick(
                     openTime = openTime,
                     closingTime = closingTime,

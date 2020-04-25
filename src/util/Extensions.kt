@@ -1,5 +1,7 @@
 package io.ruban.util
 
+import io.ruban.entity.Candlestick
+import io.ruban.entity.CandlestickView
 import io.ruban.entity.Instrument
 import io.ruban.entity.InstrumentView
 import java.time.OffsetDateTime
@@ -41,4 +43,14 @@ inline fun Instrument.quoted(price: Double): Instrument = Instrument(
     price = price,
     createdAt = createdAt,
     updatedAt = OffsetDateTime.now()
+)
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun Candlestick.view(): CandlestickView = CandlestickView(
+    openTime = openTime.format(DateTimeFormatter.ISO_INSTANT),
+    closingTime = closingTime.format(DateTimeFormatter.ISO_INSTANT),
+    openPrice = openPrice,
+    closingPrice = closingPrice,
+    highPrice = highPrice,
+    lowPrice = lowPrice
 )
