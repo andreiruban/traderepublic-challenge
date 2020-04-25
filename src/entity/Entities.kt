@@ -3,24 +3,34 @@ package io.ruban.entity
 import java.time.OffsetDateTime
 
 data class InstrumentEvent(
-    val data: InstrumentEventBody,
-    val type: EventType
-)
+    override val data: InstrumentData,
+    override val type: EventType
+) : Event()
 
 data class QuoteEvent(
-    val data: QuoteEventBody,
-    val type: EventType
-)
+    override val data: QuoteData,
+    override val type: EventType
+) : Event()
 
-data class InstrumentEventBody(
+abstract class Event {
+    abstract val type: EventType
+    abstract val data: Data
+}
+
+data class InstrumentData(
     val description: String,
-    val isin: String
-)
+    override val isin: String
+) : Data()
 
-data class QuoteEventBody(
+data class QuoteData(
     val price: Double,
-    val isin: String
-)
+    override val isin: String
+) : Data()
+
+
+abstract class Data {
+    abstract val isin: String
+}
 
 data class InstrumentView(
     val isin: String,
