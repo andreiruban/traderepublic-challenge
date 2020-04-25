@@ -2,8 +2,14 @@
 
 ### Setting Up
 
-Building a project with gradle
+* Building a project with gradle
 
 ```
 $   ./gradlew clean build --parallel
+```
+
+* Run it 
+
+```
+./gradlew run
 ```
