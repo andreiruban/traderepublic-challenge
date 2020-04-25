@@ -25,6 +25,7 @@ import io.ktor.webjars.Webjars
 import io.ktor.websocket.webSocket
 import io.ruban.entity.InstrumentEvent
 import io.ruban.entity.QuoteEvent
+import io.ruban.entity.ResponseContainer
 import io.ruban.repository.Repository
 import io.ruban.service.DataAggregator
 import io.ruban.service.EventProcessor
@@ -105,16 +106,16 @@ fun Application.module(testing: Boolean = true) {
 
     routing {
         get(path = "/instruments") {
-            call.respond(status = HttpStatusCode.OK, message = aggregator.list())
+            call.respond(status = HttpStatusCode.OK, message = ResponseContainer(body = aggregator.list()))
         }
 
-        get(path = "/candles") {
+        get(path = "/candles/{isin}") {
             val isin: String = call.parameters["isin"] ?: throw RuntimeException("ISIN not specified")
             val lastPeriod: Long = call.parameters["last_period"]?.toLong() ?: 30
 
             call.respond(
                 status = HttpStatusCode.OK,
-                message = aggregator.candleViews(isin = isin, period = lastPeriod)
+                message = ResponseContainer(body = aggregator.candleViews(isin = isin, period = lastPeriod))
             )
         }
 

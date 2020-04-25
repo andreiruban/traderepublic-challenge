@@ -1,6 +1,7 @@
 package io.ruban.entity
 
 import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 
 data class InstrumentEvent(
     override val data: InstrumentData,
@@ -69,4 +70,9 @@ data class CandlestickView(
     val closingPrice: Double,
     val highPrice: Double,
     val lowPrice: Double
+)
+
+data class ResponseContainer(
+    val body: Any,
+    val timestamp: String = OffsetDateTime.now().format(DateTimeFormatter.ISO_INSTANT)
 )
