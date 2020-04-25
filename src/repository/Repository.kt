@@ -3,39 +3,45 @@ package io.ruban.repository
 import io.ruban.entity.Instrument
 import io.ruban.util.active
 import io.ruban.util.disabled
-import io.ruban.util.updated
+import io.ruban.util.quoted
 import org.slf4j.LoggerFactory
+import java.time.OffsetDateTime
 
 class Repository {
 
     private val log = LoggerFactory.getLogger(Repository::class.java)
 
-    private val dataSource: HashMap<String, Instrument> = HashMap()
+    private val quotes: HashMap<String, MutableList<Pair<OffsetDateTime, Double>>> = HashMap()
+    private val instruments: HashMap<String, Instrument> = HashMap()
 
-    fun allActive(): Collection<Instrument> {
-        return dataSource.values.filter { it.isActive }
+    fun activeInstruments(): List<Instrument> {
+        return instruments.values.filter { it.isActive }
     }
 
     fun activate(isin: String, description: String) {
-        if (dataSource.containsKey(isin)) {
-            val entity = dataSource[isin]!!
-            dataSource[isin] = entity.active()
-        } else dataSource[isin] = Instrument(isin = isin, description = description)
+        if (instruments.containsKey(isin)) {
+            val entity = instruments[isin]!!
+            instruments[isin] = entity.active(description)
+        } else instruments[isin] = Instrument(isin = isin, description = description)
     }
 
     fun disable(isin: String, description: String) {
-        if (dataSource.containsKey(isin)) {
-            val entity = dataSource[isin]!!
-            dataSource[isin] = entity.disabled(description)
+        if (instruments.containsKey(isin)) {
+            val entity = instruments[isin]!!
+            instruments[isin] = entity.disabled(description)
         } else log.warn("Instrument [$isin] not found")
     }
 
-    fun update(isin: String, price: Double) {
-        if (dataSource.containsKey(isin)) {
-            val entity = dataSource[isin]!!
-            if (entity.isActive) {
-                dataSource[isin] = entity.updated(price)
-            } else log.warn("Instrument [$isin] not active")
-        } else log.warn("Instrument [$isin] not found")
+    fun quote(isin: String, price: Double) {
+        if (quotes.containsKey(isin)) {
+            quotes.getValue(isin).plusElement(Pair(OffsetDateTime.now(), price))
+        } else {
+            quotes[isin] = mutableListOf(Pair(OffsetDateTime.now(), price))
+        }
+
+        if (instruments.containsKey(isin)) {
+            val entity = instruments[isin]!!
+            instruments[isin] = entity.quoted(price)
+        }
     }
 }

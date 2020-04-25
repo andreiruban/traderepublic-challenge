@@ -8,7 +8,7 @@ import io.ruban.util.view
 class DataAggregator(
     private val repository: Repository
 ) {
-    fun list() = repository.allActive().map(Instrument::view)
+    fun list() = repository.activeInstruments().map(Instrument::view)
 
     fun candles(minutes: Int): Collection<Candlestick> {
 

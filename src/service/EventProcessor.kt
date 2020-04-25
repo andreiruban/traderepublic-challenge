@@ -27,7 +27,7 @@ class EventProcessor(
             QUOTE -> {
                 val data = (event as QuoteEvent).data
                 validatePrice(data.price)
-                repository.update(isin = data.isin, price = data.price)
+                repository.quote(isin = data.isin, price = data.price)
             }
         }
     }

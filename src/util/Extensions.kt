@@ -15,7 +15,7 @@ inline fun Instrument.view(): InstrumentView = InstrumentView(
 )
 
 @Suppress("NOTHING_TO_INLINE")
-inline fun Instrument.active(): Instrument = Instrument(
+inline fun Instrument.active(description: String): Instrument = Instrument(
     isin = isin,
     description = description,
     price = price,
@@ -35,7 +35,7 @@ inline fun Instrument.disabled(description: String): Instrument = Instrument(
 )
 
 @Suppress("NOTHING_TO_INLINE")
-inline fun Instrument.updated(price: Double): Instrument = Instrument(
+inline fun Instrument.quoted(price: Double): Instrument = Instrument(
     isin = isin,
     description = description,
     price = price,
