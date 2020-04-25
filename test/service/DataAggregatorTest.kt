@@ -1,5 +1,6 @@
 package io.ruban.service
 
+import io.ruban.entity.Candlestick
 import io.ruban.repository.Repository
 import org.junit.Assert.assertEquals
 import java.time.OffsetDateTime
@@ -76,13 +77,17 @@ class DataAggregatorTest {
             }
         }
 
-        val candles = unit.candlesFor(isin = "isin", period = 30)
+        val candles = unit.candles(isin = "isin", period = 30)
         assertEquals(1, candles.size)
-        assertEquals(openTimestamp, candles[0].openTime)
-        assertEquals(openPrice, candles[0].openPrice, 0.0)
-        assertEquals(highPrice, candles[0].highPrice, 0.0)
-        assertEquals(lowPrice, candles[0].lowPrice, 0.0)
-        assertEquals(closingPrice, candles[0].closingPrice, 0.0)
-        assertEquals(openTimestamp.plusSeconds(9), candles[0].closingTime)
+        assertEquals(
+            Candlestick(
+                openTime = openTimestamp,
+                openPrice = openPrice,
+                closingPrice = closingPrice,
+                highPrice = highPrice,
+                lowPrice = lowPrice,
+                closingTime = openTimestamp.plusSeconds(9)
+            ), candles[0]
+        )
     }
 }

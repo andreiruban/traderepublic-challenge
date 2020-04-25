@@ -3,11 +3,13 @@ package io.ruban.util
 import io.ruban.entity.Candlestick
 import java.time.OffsetDateTime
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 
-fun toCandles(quotes: SortedMap<OffsetDateTime, Double>): List<Candlestick> {
-    val candles: MutableList<Candlestick> = mutableListOf()
+fun generate(quotes: SortedMap<OffsetDateTime, Double>): Map<Int, Candlestick> {
+    val candles: MutableMap<Int, Candlestick> = sortedMapOf()
 
     val chunks = quotes.keys.groupBy { time -> time.minute }.toSortedMap()
+    val index = AtomicInteger(0)
     try {
         chunks.forEach { (_, timeChunk) ->
 
@@ -16,15 +18,13 @@ fun toCandles(quotes: SortedMap<OffsetDateTime, Double>): List<Candlestick> {
             val highPrice = quotes.filterKeys { time -> time in timeChunk }.values.max()!!
             val lowPrice = quotes.filterKeys { time -> time in timeChunk }.values.min()!!
 
-            candles.add(
-                Candlestick(
-                    openTime = openTime,
-                    closingTime = closingTime,
-                    openPrice = quotes[openTime]!!,
-                    closingPrice = quotes[closingTime]!!,
-                    highPrice = highPrice,
-                    lowPrice = lowPrice
-                )
+            candles[index.getAndIncrement()] = Candlestick(
+                openTime = openTime,
+                closingTime = closingTime,
+                openPrice = quotes[openTime]!!,
+                closingPrice = quotes[closingTime]!!,
+                highPrice = highPrice,
+                lowPrice = lowPrice
             )
         }
 

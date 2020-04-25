@@ -23,13 +23,11 @@ import io.ktor.routing.routing
 import io.ktor.util.KtorExperimentalAPI
 import io.ktor.webjars.Webjars
 import io.ktor.websocket.webSocket
-import io.ruban.entity.Candlestick
 import io.ruban.entity.InstrumentEvent
 import io.ruban.entity.QuoteEvent
 import io.ruban.repository.Repository
 import io.ruban.service.DataAggregator
 import io.ruban.service.EventProcessor
-import io.ruban.util.view
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.collect
@@ -116,7 +114,7 @@ fun Application.module(testing: Boolean = true) {
 
             call.respond(
                 status = HttpStatusCode.OK,
-                message = aggregator.candlesFor(isin = isin, period = lastPeriod).map(Candlestick::view)
+                message = aggregator.candleViews(isin = isin, period = lastPeriod)
             )
         }
 

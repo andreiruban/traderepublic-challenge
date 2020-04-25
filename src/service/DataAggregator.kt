@@ -4,7 +4,7 @@ import io.ruban.entity.Candlestick
 import io.ruban.entity.CandlestickView
 import io.ruban.entity.Instrument
 import io.ruban.repository.Repository
-import io.ruban.util.toCandles
+import io.ruban.util.generate
 import io.ruban.util.validateISIN
 import io.ruban.util.validatePeriod
 import io.ruban.util.view
@@ -14,9 +14,12 @@ class DataAggregator(
 ) {
     fun list() = repository.activeInstruments().map(Instrument::view)
 
-    fun candlesFor(isin: String, period: Long): List<Candlestick> {
+    fun candles(isin: String, period: Long): Map<Int, Candlestick> {
         validateISIN(isin)
         validatePeriod(period)
-        return toCandles(repository.lastQuotes(isin = isin, minutes = period))
+        return generate(repository.lastQuotes(isin = isin, minutes = period))
     }
+
+    fun candleViews(isin: String, period: Long): Map<Int, CandlestickView> =
+        candles(isin = isin, period = period).mapValues { it.value.view() }
 }
