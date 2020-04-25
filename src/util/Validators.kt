@@ -1,6 +1,5 @@
 package io.ruban.util
 
-// TODO: throw custom exception
 fun validateISIN(isin: String) {
     if (isin.isBlank()) throw RuntimeException("ISIN $isin is invalid")
 }

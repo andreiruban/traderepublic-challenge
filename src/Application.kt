@@ -29,6 +29,7 @@ import io.ruban.entity.ResponseContainer
 import io.ruban.repository.Repository
 import io.ruban.service.DataAggregator
 import io.ruban.service.EventProcessor
+import io.ruban.util.toView
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.collect
@@ -41,6 +42,8 @@ import org.kodein.di.generic.instance
 import org.kodein.di.generic.singleton
 import java.text.DateFormat
 import java.time.Duration
+
+private const val defaultPeriod: Long = 30
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
@@ -104,6 +107,12 @@ fun Application.module(testing: Boolean = true) {
         }
     }
 
+    async {
+        while (true) {
+            aggregator.analyzeFlipFlops(period = 5)
+        }
+    }
+
     routing {
         get(path = "/instruments") {
             call.respond(status = HttpStatusCode.OK, message = ResponseContainer(body = aggregator.list()))
@@ -111,21 +120,24 @@ fun Application.module(testing: Boolean = true) {
 
         get(path = "/candles/{isin}") {
             val isin: String = call.parameters["isin"] ?: throw RuntimeException("ISIN not specified")
-            val lastPeriod: Long = call.parameters["last_period"]?.toLong() ?: 30
+            val lastPeriod: Long = call.parameters["last_period"]?.toLong() ?: defaultPeriod
 
             call.respond(
                 status = HttpStatusCode.OK,
-                message = ResponseContainer(body = aggregator.candleViews(isin = isin, period = lastPeriod))
+                message = ResponseContainer(body = toView(aggregator.candles(isin = isin, period = lastPeriod)))
             )
         }
 
         webSocket("/hotInstruments") {
             while (true) {
-                // TODO delay ?
-                // TODO Check Offers
-                // TODO send
-
-                outgoing.send(Frame.Text("Hot Push!"))
+                val flipFlop = aggregator.pollFlipFlop()
+                if (flipFlop != null) {
+                    if (flipFlop.second) {
+                        outgoing.send(Frame.Text("${flipFlop.first} is rapidly going up!"))
+                    } else {
+                        outgoing.send(Frame.Text("${flipFlop.first} is rapidly going down!"))
+                    }
+                }
             }
         }
     }
