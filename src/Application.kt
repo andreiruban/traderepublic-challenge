@@ -108,12 +108,17 @@ fun Application.module(testing: Boolean = true) {
             call.respond(status = HttpStatusCode.OK, message = aggregator.list())
         }
 
-        webSocket("/channel") {
+        get(path = "/candles") {
+            call.respond(status = HttpStatusCode.OK, message = aggregator.candles(minutes = 30))
+        }
+
+        webSocket("/hotInstruments") {
             while (true) {
-                val frame = incoming.receive()
-                if (frame is Frame.Text) {
-                    send(Frame.Text("Client said: " + frame.readText()))
-                }
+                // TODO delay ?
+                // TODO Check Offers
+                // TODO send
+
+                outgoing.send(Frame.Text("Hot Push!"))
             }
         }
     }
