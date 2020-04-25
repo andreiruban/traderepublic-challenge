@@ -9,7 +9,7 @@ fun toCandles(quotes: SortedMap<OffsetDateTime, Double>): List<Candlestick> {
 
     val chunks = quotes.keys.groupBy { time -> time.minute }.toSortedMap()
     try {
-        chunks.forEach { (minute, timeChunk) ->
+        chunks.forEach { (_, timeChunk) ->
 
             val openTime = timeChunk.min()!!
             val closingTime = timeChunk.max()!!

@@ -9,12 +9,13 @@ import java.time.OffsetDateTime
 import java.util.*
 import kotlin.collections.HashMap
 
-class Repository {
+class Repository(
+    private val instruments: MutableMap<String, Instrument> = HashMap(),
+    private val quotes: MutableMap<String, SortedMap<OffsetDateTime, Double>> = HashMap()
+) {
 
     private val log = LoggerFactory.getLogger(Repository::class.java)
 
-    private val quotes: HashMap<String, SortedMap<OffsetDateTime, Double>> = HashMap()
-    private val instruments: HashMap<String, Instrument> = HashMap()
 
     fun activeInstruments(): List<Instrument> {
         return instruments.values.filter { it.isActive }
@@ -44,11 +45,11 @@ class Repository {
         } else log.warn("Instrument [$isin] not found")
     }
 
-    fun quote(isin: String, price: Double) {
-        if (isin in quotes) {
-            quotes.getValue(isin).plus(Pair(OffsetDateTime.now(), price))
+    fun quote(isin: String, price: Double, timestamp: OffsetDateTime = OffsetDateTime.now()) {
+        if (isin in quotes.keys) {
+            quotes[isin]!![timestamp] = price
         } else {
-            quotes[isin] = sortedMapOf(Pair(OffsetDateTime.now(), price))
+            quotes.putIfAbsent(isin, sortedMapOf(Pair(timestamp, price)))
         }
 
         if (isin in instruments) {
