@@ -8,13 +8,12 @@ import io.ruban.util.validateISIN
 import io.ruban.util.validatePeriod
 import io.ruban.util.view
 import java.time.OffsetDateTime
-import java.util.*
 
 class DataAggregator(
     private val repository: Repository,
-    private val flipFlops: MutableMap<String, MutableMap<OffsetDateTime, Boolean>> = mutableMapOf()
+    private val flipFlops: MutableMap<String, MutableMap<OffsetDateTime, Boolean>> = mutableMapOf(),
+    private val pullState: MutableMap<OffsetDateTime, String> = mutableMapOf()
 ) {
-
 
     fun list() = repository.activeInstruments().map(Instrument::view)
 
@@ -24,14 +23,16 @@ class DataAggregator(
         return generate(repository.lastQuotes(isin = isin, minutes = period))
     }
 
-    // primitive
-    fun pollFlipFlop(): Pair<String, Boolean>? = try {
-        val firstIsin: String = flipFlops.keys.first()
-        val isGoingUp = flipFlops[firstIsin]!!.values.last()
-        flipFlops.remove(firstIsin)
-        Pair(firstIsin, isGoingUp)
-    } catch (e: NoSuchElementException) {
-        null
+    fun getHotOffer(): Pair<String, Boolean>? {
+        val ffMapToOffer = flipFlops.filterValues { map -> map.keys.last() !in pullState.keys }
+        val isin = ffMapToOffer.keys.firstOrNull()
+        return if (isin != null) {
+            val time = ffMapToOffer.getValue(isin).keys.first()
+            val state = ffMapToOffer.getValue(isin).values.first()
+            pullState[time] = isin
+            Pair(isin, state)
+        } else null
+
     }
 
     // primitive
@@ -45,7 +46,7 @@ class DataAggregator(
 
                 val isGoingUp = bPrice > aPrice
                 if (isGoingUp) {
-                    if ((bPrice.minus(aPrice).div(bPrice) * 100) > 10) {
+                    if (bPrice.minus(aPrice).div(bPrice) * 100 > 10) {
                         if (isin in flipFlops.keys && !flipFlops[isin]!!.values.last()) {
                             flipFlops[isin]!![OffsetDateTime.now()] = isGoingUp
                         } else {
@@ -54,7 +55,7 @@ class DataAggregator(
                     }
                 } else {
                     if ((aPrice.minus(bPrice).div(aPrice) * 100) > 10) {
-                        if (isin in flipFlops.keys && flipFlops[isin]!!.values.last()) {
+                        if (isin in flipFlops.keys && !flipFlops[isin]!!.values.last()) {
                             flipFlops[isin]!![OffsetDateTime.now()] = isGoingUp
                         } else {
                             flipFlops[isin] = mutableMapOf(Pair(OffsetDateTime.now(), isGoingUp))

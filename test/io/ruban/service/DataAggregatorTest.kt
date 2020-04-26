@@ -2,22 +2,25 @@ package io.ruban.service
 
 import io.ruban.entity.Candlestick
 import io.ruban.repository.Repository
-import org.junit.Assert.assertEquals
+import org.junit.Assert.*
 import java.time.OffsetDateTime
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 class DataAggregatorTest {
 
-    private lateinit var flipFlops: MutableMap<String, MutableMap<OffsetDateTime, Boolean>>
     private lateinit var repository: Repository
     private lateinit var unit: DataAggregator
 
+    private lateinit var flipFlops: MutableMap<String, MutableMap<OffsetDateTime, Boolean>>
+    private lateinit var pullState: MutableMap<OffsetDateTime, String>
+
     @BeforeTest
     fun `before each`() {
-        flipFlops = mutableMapOf()
         repository = Repository()
-        unit = DataAggregator(repository, flipFlops)
+        flipFlops = mutableMapOf()
+        pullState = mutableMapOf()
+        unit = DataAggregator(repository, flipFlops, pullState)
     }
 
     @Test
@@ -144,4 +147,25 @@ class DataAggregatorTest {
 
         assertEquals(2, flipFlops["isin"]!!.size)
     }
+
+    @Test
+    fun `should get hot offer`() {
+        flipFlops["isin"] = mutableMapOf(Pair(OffsetDateTime.now(), true))
+        val pair = unit.getHotOffer()
+        assertNotNull(pair)
+        assertEquals(1, pullState.size)
+    }
+
+    @Test
+    fun `should get hot offer twice`() {
+        flipFlops["isin"] = mutableMapOf(Pair(OffsetDateTime.now(), true))
+        val pair1 = unit.getHotOffer()
+        assertNotNull(pair1)
+
+        val pair2 = unit.getHotOffer()
+        assertNull(pair2)
+        assertEquals(1, pullState.size)
+    }
+
+
 }

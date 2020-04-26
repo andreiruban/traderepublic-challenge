@@ -1,7 +1,6 @@
 package io.ruban.repository
 
 import io.ruban.entity.Instrument
-import io.ruban.repository.Repository
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import java.time.OffsetDateTime
