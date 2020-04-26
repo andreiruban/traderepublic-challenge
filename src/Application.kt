@@ -56,10 +56,10 @@ fun Application.module(testing: Boolean = true) {
         bind<HttpClient>(tag = "socketClient") with singleton { HttpClient(CIO).config { install(WebSockets) } }
         bind<Gson>(tag = "gson") with singleton { Gson() }
 
-        bind<Repository>(tag = "io/ruban/repository") with singleton { Repository() }
+        bind<Repository>(tag = "repository") with singleton { Repository() }
 
-        bind<EventProcessor>(tag = "processor") with singleton { EventProcessor(instance(tag = "io/ruban/repository")) }
-        bind<DataAggregator>(tag = "aggregator") with singleton { DataAggregator(instance(tag = "io/ruban/repository")) }
+        bind<EventProcessor>(tag = "processor") with singleton { EventProcessor(instance(tag = "repository")) }
+        bind<DataAggregator>(tag = "aggregator") with singleton { DataAggregator(instance(tag = "repository")) }
     }
 
     install(ContentNegotiation) {
