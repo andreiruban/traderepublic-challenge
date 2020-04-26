@@ -140,6 +140,9 @@ fun Application.module(testing: Boolean = true) {
                             "${flipFlop.first} is rapidly going down!"
                         }
                     }
+                    if (testing) {
+                        log.info(message)
+                    }
                     outgoing.send(Frame.Text(message))
                 }
             }

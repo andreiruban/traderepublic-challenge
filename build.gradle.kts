@@ -60,10 +60,6 @@ dependencies {
     // DI
     implementation("org.kodein.di:kodein-di-generic-jvm:$kodein_version")
     implementation("org.kodein.di:kodein-di-framework-ktor-server-jvm:$kodein_version")
-
-//    implementation("org.jetbrains.exposed:exposed:0.12.1")
-//    implementation("com.zaxxer:HikariCP:2.7.8")
-//    implementation("org.postgresql:postgresql:42.2.2")
 }
 
 kotlin.sourceSets["main"].kotlin.srcDirs("src")
