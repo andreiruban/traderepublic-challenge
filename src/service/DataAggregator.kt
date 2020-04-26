@@ -8,12 +8,13 @@ import io.ruban.util.validateISIN
 import io.ruban.util.validatePeriod
 import io.ruban.util.view
 import java.time.OffsetDateTime
+import java.util.*
 
 class DataAggregator(
-    private val repository: Repository
+    private val repository: Repository,
+    private val flipFlops: MutableMap<String, MutableMap<OffsetDateTime, Boolean>> = mutableMapOf()
 ) {
 
-    private val fflops = sortedMapOf<String, Pair<OffsetDateTime, Boolean>>()
 
     fun list() = repository.activeInstruments().map(Instrument::view)
 
@@ -25,9 +26,9 @@ class DataAggregator(
 
     // primitive
     fun pollFlipFlop(): Pair<String, Boolean>? = try {
-        val firstIsin: String = fflops.firstKey()
-        val isGoingUp = fflops[firstIsin]!!.second
-        fflops.remove(firstIsin)
+        val firstIsin: String = flipFlops.keys.first()
+        val isGoingUp = flipFlops[firstIsin]!!.values.last()
+        flipFlops.remove(firstIsin)
         Pair(firstIsin, isGoingUp)
     } catch (e: NoSuchElementException) {
         null
@@ -45,18 +46,18 @@ class DataAggregator(
                 val isGoingUp = bPrice > aPrice
                 if (isGoingUp) {
                     if ((bPrice.minus(aPrice).div(bPrice) * 100) > 10) {
-                        if (isin in fflops.keys && !fflops[isin]!!.second) {
-                            fflops[isin] = Pair(OffsetDateTime.now(), isGoingUp)
+                        if (isin in flipFlops.keys && !flipFlops[isin]!!.values.last()) {
+                            flipFlops[isin]!![OffsetDateTime.now()] = isGoingUp
                         } else {
-                            fflops[isin] = Pair(OffsetDateTime.now(), isGoingUp)
+                            flipFlops[isin] = mutableMapOf(Pair(OffsetDateTime.now(), isGoingUp))
                         }
                     }
                 } else {
                     if ((aPrice.minus(bPrice).div(aPrice) * 100) > 10) {
-                        if (isin in fflops.keys && fflops[isin]!!.second) {
-                            fflops[isin] = Pair(OffsetDateTime.now(), isGoingUp)
+                        if (isin in flipFlops.keys && flipFlops[isin]!!.values.last()) {
+                            flipFlops[isin]!![OffsetDateTime.now()] = isGoingUp
                         } else {
-                            fflops[isin] = Pair(OffsetDateTime.now(), isGoingUp)
+                            flipFlops[isin] = mutableMapOf(Pair(OffsetDateTime.now(), isGoingUp))
                         }
                     }
                 }

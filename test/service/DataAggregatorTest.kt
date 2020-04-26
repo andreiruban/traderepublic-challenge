@@ -9,13 +9,15 @@ import kotlin.test.Test
 
 class DataAggregatorTest {
 
+    private lateinit var flipFlops: MutableMap<String, MutableMap<OffsetDateTime, Boolean>>
     private lateinit var repository: Repository
     private lateinit var unit: DataAggregator
 
     @BeforeTest
     fun `before each`() {
+        flipFlops = mutableMapOf()
         repository = Repository()
-        unit = DataAggregator(repository)
+        unit = DataAggregator(repository, flipFlops)
     }
 
     @Test
@@ -89,5 +91,57 @@ class DataAggregatorTest {
                 closingTime = openTimestamp.plusSeconds(9)
             ), candles[0]
         )
+    }
+
+    @Test
+    fun `should register a rapidly going up instrument`() {
+        repository.activate(isin = "isin", description = "isin-active")
+        repository.quote(isin = "isin", price = 10.0, timestamp = OffsetDateTime.now().minusMinutes(3))
+        repository.quote(isin = "isin", price = 12.0, timestamp = OffsetDateTime.now())
+
+        unit.analyzeFlipFlops(period = 5)
+
+        assertEquals(1, flipFlops.size)
+    }
+
+    @Test
+    fun `should register a going up flip-flop`() {
+        repository.activate(isin = "isin", description = "isin-active")
+
+        val wasGoingUp = true
+        flipFlops["isin"] = mutableMapOf(Pair(OffsetDateTime.now().minusMinutes(4), wasGoingUp))
+
+        repository.quote(isin = "isin", price = 11.0, timestamp = OffsetDateTime.now().minusMinutes(3))
+        repository.quote(isin = "isin", price = 9.0, timestamp = OffsetDateTime.now())
+
+        unit.analyzeFlipFlops(period = 5)
+
+        assertEquals(2, flipFlops["isin"]!!.size)
+    }
+
+    @Test
+    fun `should register a rapidly going down instrument`() {
+        repository.activate(isin = "isin", description = "isin-active")
+        repository.quote(isin = "isin", price = 10.0, timestamp = OffsetDateTime.now().minusMinutes(3))
+        repository.quote(isin = "isin", price = 8.9, timestamp = OffsetDateTime.now())
+
+        unit.analyzeFlipFlops(period = 5)
+
+        assertEquals(1, flipFlops.size)
+    }
+
+    @Test
+    fun `should register a going down flip-flop`() {
+        repository.activate(isin = "isin", description = "isin-active")
+
+        val wasGoingUp = false
+        flipFlops["isin"] = mutableMapOf(Pair(OffsetDateTime.now().minusMinutes(4), wasGoingUp))
+
+        repository.quote(isin = "isin", price = 11.0, timestamp = OffsetDateTime.now().minusMinutes(3))
+        repository.quote(isin = "isin", price = 9.0, timestamp = OffsetDateTime.now())
+
+        unit.analyzeFlipFlops(period = 5)
+
+        assertEquals(2, flipFlops["isin"]!!.size)
     }
 }
