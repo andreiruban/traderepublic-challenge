@@ -111,11 +111,11 @@ class DataAggregatorTest {
     fun `should register a going up flip-flop`() {
         repository.activate(isin = "isin", description = "isin-active")
 
-        val wasGoingUp = true
+        val wasGoingUp = false
         flipFlops["isin"] = mutableMapOf(Pair(OffsetDateTime.now().minusMinutes(4), wasGoingUp))
 
-        repository.quote(isin = "isin", price = 11.0, timestamp = OffsetDateTime.now().minusMinutes(3))
-        repository.quote(isin = "isin", price = 9.0, timestamp = OffsetDateTime.now())
+        repository.quote(isin = "isin", price = 9.0, timestamp = OffsetDateTime.now().minusMinutes(3))
+        repository.quote(isin = "isin", price = 11.0, timestamp = OffsetDateTime.now())
 
         unit.analyzeFlipFlops(period = 5)
 
@@ -137,7 +137,7 @@ class DataAggregatorTest {
     fun `should register a going down flip-flop`() {
         repository.activate(isin = "isin", description = "isin-active")
 
-        val wasGoingUp = false
+        val wasGoingUp = true
         flipFlops["isin"] = mutableMapOf(Pair(OffsetDateTime.now().minusMinutes(4), wasGoingUp))
 
         repository.quote(isin = "isin", price = 11.0, timestamp = OffsetDateTime.now().minusMinutes(3))

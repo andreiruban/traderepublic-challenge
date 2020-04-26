@@ -41,24 +41,27 @@ class DataAggregator(
             .map(Instrument::isin)
             .forEach { isin ->
                 val candles = generate(repository.lastQuotes(isin = isin, minutes = period))
-                val aPrice = candles.values.first().closingPrice
-                val bPrice = candles.values.last().closingPrice
+                if (candles.isNotEmpty()) {
 
-                val isGoingUp = bPrice > aPrice
-                if (isGoingUp) {
-                    if (bPrice.minus(aPrice).div(bPrice) * 100 > 10) {
-                        if (isin in flipFlops.keys && !flipFlops[isin]!!.values.last()) {
-                            flipFlops[isin]!![OffsetDateTime.now()] = isGoingUp
-                        } else {
-                            flipFlops[isin] = mutableMapOf(Pair(OffsetDateTime.now(), isGoingUp))
+                    val aPrice = candles.values.first().closingPrice
+                    val bPrice = candles.values.last().closingPrice
+
+                    val isGoingUp = bPrice > aPrice
+                    if (isGoingUp) {
+                        if (bPrice.minus(aPrice).div(bPrice) * 100 > 10) {
+                            if (isin in flipFlops.keys && !flipFlops[isin]!!.values.last()) {
+                                flipFlops[isin]!![OffsetDateTime.now()] = isGoingUp
+                            } else {
+                                flipFlops[isin] = mutableMapOf(Pair(OffsetDateTime.now(), isGoingUp))
+                            }
                         }
-                    }
-                } else {
-                    if ((aPrice.minus(bPrice).div(aPrice) * 100) > 10) {
-                        if (isin in flipFlops.keys && !flipFlops[isin]!!.values.last()) {
-                            flipFlops[isin]!![OffsetDateTime.now()] = isGoingUp
-                        } else {
-                            flipFlops[isin] = mutableMapOf(Pair(OffsetDateTime.now(), isGoingUp))
+                    } else {
+                        if ((aPrice.minus(bPrice).div(aPrice) * 100) > 10) {
+                            if (isin in flipFlops.keys && flipFlops[isin]!!.values.last()) {
+                                flipFlops[isin]!![OffsetDateTime.now()] = isGoingUp
+                            } else {
+                                flipFlops[isin] = mutableMapOf(Pair(OffsetDateTime.now(), isGoingUp))
+                            }
                         }
                     }
                 }
