@@ -13,10 +13,10 @@ fun generate(quotes: SortedMap<OffsetDateTime, Double>): Map<Int, Candlestick> {
     try {
         chunks.forEach { (_, timeChunk) ->
 
-            val openTime = timeChunk.min()!!
-            val closingTime = timeChunk.max()!!
-            val highPrice = quotes.filterKeys { time -> time in timeChunk }.values.max()!!
-            val lowPrice = quotes.filterKeys { time -> time in timeChunk }.values.min()!!
+            val openTime = timeChunk.minOrNull()!!
+            val closingTime = timeChunk.maxOrNull()!!
+            val highPrice = quotes.filterKeys { time -> time in timeChunk }.values.maxOrNull()!!
+            val lowPrice = quotes.filterKeys { time -> time in timeChunk }.values.minOrNull()!!
 
             candles[index.getAndIncrement()] = Candlestick(
                 openTime = openTime,

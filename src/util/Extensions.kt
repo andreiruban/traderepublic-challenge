@@ -7,8 +7,7 @@ import io.ruban.entity.InstrumentView
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
-@Suppress("NOTHING_TO_INLINE")
-inline fun Instrument.view(): InstrumentView = InstrumentView(
+fun Instrument.view(): InstrumentView = InstrumentView(
     isin = isin,
     description = description,
     price = price,
@@ -16,8 +15,7 @@ inline fun Instrument.view(): InstrumentView = InstrumentView(
     updatedAt = updatedAt?.format(DateTimeFormatter.ISO_INSTANT)
 )
 
-@Suppress("NOTHING_TO_INLINE")
-inline fun Instrument.active(description: String): Instrument = Instrument(
+fun Instrument.active(description: String): Instrument = Instrument(
     isin = isin,
     description = description,
     price = price,
@@ -26,8 +24,7 @@ inline fun Instrument.active(description: String): Instrument = Instrument(
     isActive = true
 )
 
-@Suppress("NOTHING_TO_INLINE")
-inline fun Instrument.disabled(description: String): Instrument = Instrument(
+fun Instrument.disabled(description: String): Instrument = Instrument(
     isin = isin,
     description = description,
     price = price,
@@ -36,8 +33,7 @@ inline fun Instrument.disabled(description: String): Instrument = Instrument(
     isActive = false
 )
 
-@Suppress("NOTHING_TO_INLINE")
-inline fun Instrument.quoted(price: Double): Instrument = Instrument(
+fun Instrument.quoted(price: Double): Instrument = Instrument(
     isin = isin,
     description = description,
     price = price,
@@ -45,8 +41,7 @@ inline fun Instrument.quoted(price: Double): Instrument = Instrument(
     updatedAt = OffsetDateTime.now()
 )
 
-@Suppress("NOTHING_TO_INLINE")
-inline fun Candlestick.view(): CandlestickView = CandlestickView(
+fun Candlestick.view(): CandlestickView = CandlestickView(
     openTime = openTime.format(DateTimeFormatter.ISO_INSTANT),
     closingTime = closingTime.format(DateTimeFormatter.ISO_INSTANT),
     openPrice = openPrice,
